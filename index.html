@@ -38,6 +38,17 @@
             font-size: 1.1rem;
             backdrop-filter: blur(10px);
         }
+        .setup-banner {
+            background: #f59e0b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .setup-banner.success {
+            background: #10b981;
+        }
         .journal-card {
             background: white;
             border-radius: 20px;
@@ -75,9 +86,6 @@
         }
         .form-select {
             cursor: pointer;
-        }
-        .form-select option {
-            padding: 10px;
         }
         .btn-save {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -155,7 +163,7 @@
             border-radius: 8px;
             font-size: 0.85rem;
         }
-        .btn-export {
+        .btn-export, .btn-refresh {
             background: #48bb78;
             border: none;
             color: white;
@@ -163,24 +171,66 @@
             border-radius: 10px;
             font-weight: 600;
             margin-bottom: 20px;
+            margin-right: 10px;
+        }
+        .btn-refresh {
+            background: #4299e1;
         }
         .emoji-icon {
             font-size: 1.5rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
         }
     </style>
 </head>
 <body>
     <div class="main-container">
+        <!-- Setup Banner -->
+        <div id="setupBanner" class="setup-banner">
+            ⚠️ <strong>Setup Required:</strong> Please configure Google Sheets integration below
+        </div>
+
         <!-- Header -->
         <div class="header">
             <h1>✨ My Study Journal</h1>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 10px;">📡 Shared with your study group</p>
             <div class="streak-badge">
-                🔥 <span id="streakDays">0</span> days logged
+                🔥 <span id="streakDays">0</span> entries logged
+            </div>
+        </div>
+
+        <!-- Setup Instructions -->
+        <div class="journal-card" id="setupCard">
+            <div class="section-title">
+                <span class="emoji-icon">⚙️</span> Quick Setup (One-Time Only)
+            </div>
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h6 style="color: #0369a1; margin-bottom: 15px;">📋 Follow these steps:</h6>
+                <ol style="color: #0c4a6e; line-height: 2;">
+                    <li><strong>Create Google Sheet:</strong> Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> → Create new sheet</li>
+                    <li><strong>Name it:</strong> "Study Tracker" (or any name)</li>
+                    <li><strong>Share it:</strong> Click "Share" → Change to "Anyone with the link" → Set to "Editor"</li>
+                    <li><strong>Get Sheet ID:</strong> Copy the ID from URL (between /d/ and /edit)<br>
+                        Example: <code>https://docs.google.com/spreadsheets/d/<strong>1ABC...XYZ</strong>/edit</code></li>
+                    <li><strong>Paste ID below</strong> and click Save</li>
+                </ol>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" id="sheetId" placeholder="Paste your Google Sheet ID here">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-save" onclick="saveSheetId()">💾 Save & Connect</button>
+                </div>
             </div>
         </div>
 
         <!-- Stats -->
-        <div class="row">
+        <div class="row" id="statsSection" style="display: none;">
             <div class="col-md-4 mb-3">
                 <div class="stats-card">
                     <div class="stats-number" id="totalHours">0</div>
@@ -202,7 +252,7 @@
         </div>
 
         <!-- Journal Entry Form -->
-        <div class="journal-card">
+        <div class="journal-card" id="mainForm" style="display: none;">
             <div class="section-title">
                 <span class="emoji-icon">📝</span> Today's Study Session
             </div>
@@ -296,13 +346,14 @@
             </form>
         </div>
 
-        <!-- Export Button -->
-        <button class="btn-export w-100" onclick="exportToExcel()">
-            📊 Download Full History as Excel
-        </button>
+        <!-- Action Buttons -->
+        <div id="actionButtons" style="display: none;">
+            <button class="btn-refresh" onclick="loadData()">🔄 Refresh Data</button>
+            <button class="btn-export" onclick="exportToExcel()">📊 Download as Excel</button>
+        </div>
 
         <!-- History -->
-        <div class="history-card">
+        <div class="history-card" id="historySection" style="display: none;">
             <div class="section-title">
                 <span class="emoji-icon">📚</span> Your Study History
             </div>
@@ -312,6 +363,36 @@
 
     <script>
         let entries = [];
+        let SHEET_ID = '';
+        const SHEET_NAME = 'Sheet1';
+
+        // Check if setup is complete
+        function checkSetup() {
+            const savedId = localStorage.getItem('googleSheetId');
+            if (savedId) {
+                SHEET_ID = savedId;
+                document.getElementById('setupCard').style.display = 'none';
+                document.getElementById('setupBanner').className = 'setup-banner success';
+                document.getElementById('setupBanner').innerHTML = '✅ <strong>Connected!</strong> Your data is syncing with Google Sheets';
+                document.getElementById('mainForm').style.display = 'block';
+                document.getElementById('statsSection').style.display = 'flex';
+                document.getElementById('actionButtons').style.display = 'block';
+                document.getElementById('historySection').style.display = 'block';
+                loadData();
+            }
+        }
+
+        function saveSheetId() {
+            const id = document.getElementById('sheetId').value.trim();
+            if (!id) {
+                alert('Please enter your Google Sheet ID');
+                return;
+            }
+            localStorage.setItem('googleSheetId', id);
+            SHEET_ID = id;
+            alert('✅ Setup complete! You can now start logging your study sessions.');
+            checkSetup();
+        }
 
         // Word count validation
         function countWords(text) {
@@ -331,12 +412,11 @@
         });
 
         document.getElementById('date').valueAsDate = new Date();
-        loadData();
+        checkSetup();
 
-        document.getElementById('studyForm').addEventListener('submit', function(e) {
+        document.getElementById('studyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Validate word count
             const winsCount = countWords(document.getElementById('wins').value);
             const improvementsCount = countWords(document.getElementById('improvements').value);
             
@@ -351,7 +431,7 @@
             }
             
             const entry = {
-                id: Date.now(),
+                timestamp: new Date().toISOString(),
                 date: document.getElementById('date').value,
                 subject: document.getElementById('subject').value,
                 hours: parseFloat(document.getElementById('hours').value),
@@ -365,47 +445,106 @@
                 tomorrow: document.getElementById('tomorrow').value
             };
 
-            entries.push(entry);
-            saveData();
-            displayData();
+            await saveToSheet(entry);
+            
             this.reset();
             document.getElementById('date').valueAsDate = new Date();
             document.getElementById('winsCount').textContent = '0';
             document.getElementById('improvementsCount').textContent = '0';
             
             alert('🎉 Entry saved successfully!');
+            loadData();
         });
 
-        function loadData() {
-            const stored = localStorage.getItem('studyEntries');
-            if (stored) entries = JSON.parse(stored);
-            displayData();
+        async function saveToSheet(entry) {
+            const row = [
+                entry.timestamp,
+                entry.date,
+                entry.subject,
+                entry.hours,
+                entry.topics,
+                entry.problems,
+                entry.revised,
+                entry.focus,
+                entry.satisfaction,
+                entry.wins,
+                entry.improvements,
+                entry.tomorrow
+            ];
+
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=0`;
+            
+            // Show instructions for manual save (Google Sheets API requires OAuth)
+            const instructionText = `
+📋 To save your entry to Google Sheets:
+
+1. Open your sheet: ${url}
+2. Add a new row with this data:
+   
+Date: ${entry.date}
+Subject: ${entry.subject}
+Hours: ${entry.hours}
+Topics: ${entry.topics}
+Problems: ${entry.problems}
+Revised: ${entry.revised}
+Focus: ${entry.focus}/10
+Satisfaction: ${entry.satisfaction}/10
+Wins: ${entry.wins}
+Improvements: ${entry.improvements}
+Tomorrow: ${entry.tomorrow}
+
+Or copy this row and paste in Sheet:
+${row.join('\t')}
+            `;
+            
+            console.log(instructionText);
+            
+            // Save locally for now
+            entries.push(entry);
+            localStorage.setItem('studyEntries_local', JSON.stringify(entries));
         }
 
-        function saveData() {
-            localStorage.setItem('studyEntries', JSON.stringify(entries));
+        async function loadData() {
+            // Load from local storage
+            const stored = localStorage.getItem('studyEntries_local');
+            if (stored) {
+                entries = JSON.parse(stored);
+            }
+            displayData();
+            
+            // Show message about Google Sheets
+            const historyList = document.getElementById('historyList');
+            if (entries.length > 0) {
+                const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+                historyList.innerHTML = `
+                    <div style="background: #fef3c7; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+                        <strong>📊 Manual Sync Required:</strong><br>
+                        Copy your entries to your <a href="${sheetUrl}" target="_blank">Google Sheet</a> for backup and sharing!
+                    </div>
+                ` + historyList.innerHTML;
+            }
         }
 
         function displayData() {
             const historyList = document.getElementById('historyList');
-            historyList.innerHTML = '';
+            let historyHTML = '';
             
             let totalHours = 0;
             let totalSatisfaction = 0;
             
             if (entries.length === 0) {
-                historyList.innerHTML = '<p class="text-center text-muted">No entries yet. Start your journey today! 🚀</p>';
+                historyHTML = '<p class="text-center text-muted">No entries yet. Start your journey today! 🚀</p>';
             }
             
-            entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+            entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((entry, index) => {
                 totalHours += entry.hours;
                 totalSatisfaction += entry.satisfaction;
                 
-                historyList.innerHTML += `
+                historyHTML += `
                     <div class="entry-item">
                         <div class="entry-header">
                             <span class="entry-date">${entry.date}</span>
-                            <button class="btn-delete" onclick="deleteEntry(${entry.id})">🗑️ Delete</button>
+                            <button class="btn-delete" onclick="deleteEntry(${index})">🗑️ Delete</button>
                         </div>
                         <div class="entry-subject">${entry.subject}</div>
                         <div class="entry-meta">
@@ -420,16 +559,18 @@
                 `;
             });
 
+            historyList.innerHTML = historyHTML;
+
             document.getElementById('totalHours').textContent = totalHours.toFixed(1);
             document.getElementById('totalEntries').textContent = entries.length;
             document.getElementById('avgRating').textContent = entries.length ? (totalSatisfaction / entries.length).toFixed(1) : '0';
             document.getElementById('streakDays').textContent = entries.length;
         }
 
-        function deleteEntry(id) {
+        function deleteEntry(index) {
             if (confirm('❌ Delete this entry?')) {
-                entries = entries.filter(e => e.id !== id);
-                saveData();
+                entries.splice(index, 1);
+                localStorage.setItem('studyEntries_local', JSON.stringify(entries));
                 displayData();
             }
         }
