@@ -195,8 +195,8 @@
 <body>
     <div class="main-container">
         <!-- Setup Banner -->
-        <div id="setupBanner" class="setup-banner">
-            ⚠️ <strong>Setup Required:</strong> Please configure Firebase below (takes 5 minutes)
+        <div id="setupBanner" class="setup-banner success" style="display: none;">
+            ✅ <strong>Connected to Firebase!</strong> Real-time sync is active 🔥
         </div>
 
         <!-- Header -->
@@ -209,7 +209,7 @@
         </div>
 
         <!-- Setup Instructions -->
-        <div class="journal-card" id="setupCard">
+        <div class="journal-card" id="setupCard" style="display: none;">
             <div class="section-title">
                 <span class="emoji-icon">🔥</span> Firebase Setup (One-Time Only)
             </div>
@@ -268,7 +268,7 @@ const firebaseConfig = {<br>
         </div>
 
         <!-- Stats -->
-        <div class="row" id="statsSection" style="display: none;">
+        <div class="row" id="statsSection">
             <div class="col-md-4 mb-3">
                 <div class="stats-card">
                     <div class="stats-number" id="totalHours">0</div>
@@ -290,7 +290,7 @@ const firebaseConfig = {<br>
         </div>
 
         <!-- Journal Entry Form -->
-        <div class="journal-card" id="mainForm" style="display: none;">
+        <div class="journal-card" id="mainForm">
             <div class="section-title">
                 <span class="emoji-icon">📝</span> Today's Study Session
             </div>
@@ -385,12 +385,12 @@ const firebaseConfig = {<br>
         </div>
 
         <!-- Export Button -->
-        <div id="exportSection" style="display: none;">
+        <div id="exportSection">
             <button class="btn-export w-100" onclick="exportToExcel()">📊 Download Full History as Excel</button>
         </div>
 
         <!-- History -->
-        <div class="history-card" id="historySection" style="display: none;">
+        <div class="history-card" id="historySection">
             <div class="section-title">
                 <span class="emoji-icon">📚</span> Your Study History (Real-time)
             </div>
@@ -402,11 +402,26 @@ const firebaseConfig = {<br>
         let database;
         let entries = [];
 
+        // Your Firebase Configuration (Pre-configured)
+        const DEFAULT_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAKZtv1RljrsZRxG2nuZKh9P-jpu2YrHpg",
+            authDomain: "track-mystudy.firebaseapp.com",
+            databaseURL: "https://track-mystudy-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "track-mystudy",
+            storageBucket: "track-mystudy.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
         function checkSetup() {
             const config = localStorage.getItem('firebaseConfig');
             if (config) {
                 const firebaseConfig = JSON.parse(config);
                 initializeFirebase(firebaseConfig);
+            } else {
+                // Auto-initialize with default config
+                localStorage.setItem('firebaseConfig', JSON.stringify(DEFAULT_FIREBASE_CONFIG));
+                initializeFirebase(DEFAULT_FIREBASE_CONFIG);
             }
         }
 
@@ -443,17 +458,12 @@ const firebaseConfig = {<br>
                 database = firebase.database();
                 
                 document.getElementById('setupCard').style.display = 'none';
-                document.getElementById('setupBanner').className = 'setup-banner success';
-                document.getElementById('setupBanner').innerHTML = '✅ <strong>Connected to Firebase!</strong> Real-time sync is active 🔥';
-                document.getElementById('mainForm').style.display = 'block';
-                document.getElementById('statsSection').style.display = 'flex';
-                document.getElementById('exportSection').style.display = 'block';
-                document.getElementById('historySection').style.display = 'block';
+                document.getElementById('setupBanner').style.display = 'block';
                 
                 loadData();
                 document.getElementById('date').valueAsDate = new Date();
             } catch (error) {
-                alert('❌ Firebase connection failed. Please check your configuration: ' + error.message);
+                alert('❌ Firebase connection failed: ' + error.message);
                 console.error(error);
             }
         }
