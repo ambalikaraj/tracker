@@ -10,7 +10,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -191,108 +190,10 @@
             overflow-x: auto;
             margin: 10px 0;
         }
-        .login-container {
-            max-width: 450px;
-            margin: 100px auto;
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-        .login-title {
-            color: #667eea;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        .login-subtitle {
-            color: #718096;
-            margin-bottom: 30px;
-        }
-        .btn-google {
-            background: white;
-            border: 2px solid #e2e8f0;
-            color: #2d3748;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            width: 100%;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-        .btn-google:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
-            transform: translateY(-2px);
-        }
-        .user-info {
-            background: rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 15px;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            backdrop-filter: blur(10px);
-        }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-        .btn-logout {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s;
-        }
-        .btn-logout:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        .filter-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
-    <!-- Login Page -->
-    <div id="loginPage" style="display: none;">
-        <div class="login-container">
-            <div class="login-title">🔐 Study Journal</div>
-            <div class="login-subtitle">Please sign in with your Gmail to continue</div>
-            <button class="btn-google" onclick="signInWithGoogle()">
-                <svg width="20" height="20" viewBox="0 0 20 20">
-                    <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
-                    <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z"/>
-                    <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z"/>
-                    <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z"/>
-                </svg>
-                Sign in with Google
-            </button>
-            <p style="color: #718096; font-size: 0.85rem; margin-top: 20px;">
-                🔒 Secure authentication via Firebase
-            </p>
-        </div>
-    </div>
-
-    <!-- Main App -->
-    <div class="main-container" id="mainApp" style="display: none;">
+    <div class="main-container">
         <!-- Setup Banner -->
         <div id="setupBanner" class="setup-banner success" style="display: none;">
             ✅ <strong>Connected to Firebase!</strong> Real-time sync is active 🔥
@@ -302,9 +203,6 @@
         <div class="header">
             <h1>✨ My Study Journal</h1>
             <p style="color: rgba(255,255,255,0.9); margin-bottom: 10px;">📡 Real-time sync with your study group</p>
-            <div class="user-info" id="userInfo"></div>
-            <button class="btn-logout" onclick="signOut()">🚪 Logout</button>
-            <br><br>
             <div class="streak-badge">
                 🔥 <span id="streakDays">0</span> entries logged
             </div>
@@ -340,12 +238,6 @@ const firebaseConfig = {<br>
                             <li>Left sidebar → Build → Realtime Database → Create Database</li>
                             <li>Choose location (closest to you) → Next</li>
                             <li>Start in <strong>Test mode</strong> → Enable</li>
-                        </ul>
-                    </li>
-                    <li><strong>Enable Google Sign-In:</strong>
-                        <ul style="margin-top: 10px;">
-                            <li>Left sidebar → Build → Authentication → Get Started</li>
-                            <li>Sign-in method tab → Google → Enable → Save</li>
                         </ul>
                     </li>
                     <li><strong>Copy Database URL:</strong> It looks like: <code>https://your-project.firebaseio.com</code></li>
@@ -502,27 +394,13 @@ const firebaseConfig = {<br>
             <div class="section-title">
                 <span class="emoji-icon">📚</span> Your Study History (Real-time)
             </div>
-            
-            <!-- User Filter -->
-            <div class="filter-section">
-                <label class="form-label">👤 Filter by User:</label>
-                <select class="form-select" id="userFilter" onchange="filterEntries()">
-                    <option value="all">🌐 All Users</option>
-                    <option value="me">👤 My Entries Only</option>
-                </select>
-                <div id="usersList" style="margin-top: 10px;"></div>
-            </div>
-            
             <div id="historyList"></div>
         </div>
     </div>
 
     <script>
         let database;
-        let auth;
         let entries = [];
-        let currentUser = null;
-        let allUsers = new Set();
 
         // Your Firebase Configuration (Pre-configured)
         const DEFAULT_FIREBASE_CONFIG = {
@@ -568,8 +446,8 @@ const firebaseConfig = {<br>
             };
 
             localStorage.setItem('firebaseConfig', JSON.stringify(firebaseConfig));
-            alert('✅ Firebase configured! Please refresh and login...');
-            location.reload();
+            alert('✅ Firebase configured! Connecting...');
+            initializeFirebase(firebaseConfig);
         }
 
         function initializeFirebase(config) {
@@ -578,68 +456,15 @@ const firebaseConfig = {<br>
                     firebase.initializeApp(config);
                 }
                 database = firebase.database();
-                auth = firebase.auth();
                 
-                // Check authentication state
-                auth.onAuthStateChanged((user) => {
-                    if (user) {
-                        currentUser = user;
-                        showMainApp();
-                    } else {
-                        showLoginPage();
-                    }
-                });
+                document.getElementById('setupCard').style.display = 'none';
+                document.getElementById('setupBanner').style.display = 'block';
+                
+                loadData();
+                document.getElementById('date').valueAsDate = new Date();
             } catch (error) {
                 alert('❌ Firebase connection failed: ' + error.message);
                 console.error(error);
-            }
-        }
-
-        function showLoginPage() {
-            document.getElementById('loginPage').style.display = 'block';
-            document.getElementById('mainApp').style.display = 'none';
-        }
-
-        function showMainApp() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            
-            // Display user info
-            const userInfo = document.getElementById('userInfo');
-            userInfo.innerHTML = `
-                <img src="${currentUser.photoURL}" alt="Avatar" class="user-avatar">
-                <span>${currentUser.displayName || currentUser.email}</span>
-            `;
-            
-            document.getElementById('setupCard').style.display = 'none';
-            document.getElementById('setupBanner').style.display = 'block';
-            
-            loadData();
-            document.getElementById('date').valueAsDate = new Date();
-        }
-
-        async function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                await auth.signInWithPopup(provider);
-            } catch (error) {
-                if (error.code === 'auth/popup-blocked') {
-                    alert('❌ Popup blocked! Please allow popups for this site and try again.');
-                } else {
-                    alert('❌ Sign in failed: ' + error.message);
-                }
-                console.error(error);
-            }
-        }
-
-        async function signOut() {
-            if (confirm('🚪 Are you sure you want to logout?')) {
-                try {
-                    await auth.signOut();
-                    showLoginPage();
-                } catch (error) {
-                    alert('❌ Logout failed: ' + error.message);
-                }
             }
         }
 
@@ -689,10 +514,7 @@ const firebaseConfig = {<br>
                 revised: document.getElementById('revised').value,
                 focus: parseInt(document.getElementById('focusSelect').value),
                 satisfaction: parseInt(document.getElementById('satisfactionSelect').value),
-                tomorrow: document.getElementById('tomorrow').value,
-                userId: currentUser.uid,
-                userEmail: currentUser.email,
-                userName: currentUser.displayName || currentUser.email.split('@')[0]
+                tomorrow: document.getElementById('tomorrow').value
             };
 
             try {
@@ -712,85 +534,36 @@ const firebaseConfig = {<br>
         function loadData() {
             database.ref('entries').on('value', (snapshot) => {
                 entries = [];
-                allUsers.clear();
                 snapshot.forEach((child) => {
-                    const entry = {
+                    entries.push({
                         id: child.key,
                         ...child.val()
-                    };
-                    entries.push(entry);
-                    if (entry.userEmail) {
-                        allUsers.add(entry.userEmail);
-                    }
+                    });
                 });
-                updateUserFilter();
-                filterEntries();
+                displayData();
             });
         }
 
-        function updateUserFilter() {
-            const usersList = document.getElementById('usersList');
-            const filterSelect = document.getElementById('userFilter');
-            
-            // Clear existing options except first two
-            while (filterSelect.options.length > 2) {
-                filterSelect.remove(2);
-            }
-            
-            // Add user options
-            let usersHTML = '<small class="text-muted">📋 Users in database: ';
-            allUsers.forEach(email => {
-                const option = document.createElement('option');
-                option.value = email;
-                option.textContent = `📧 ${email}`;
-                filterSelect.appendChild(option);
-                usersHTML += `${email.split('@')[0]}, `;
-            });
-            usersHTML = usersHTML.slice(0, -2) + '</small>';
-            usersList.innerHTML = usersHTML;
-        }
-
-        function filterEntries() {
-            const filterValue = document.getElementById('userFilter').value;
-            let filteredEntries = entries;
-            
-            if (filterValue === 'me') {
-                filteredEntries = entries.filter(e => e.userId === currentUser.uid);
-            } else if (filterValue !== 'all') {
-                filteredEntries = entries.filter(e => e.userEmail === filterValue);
-            }
-            
-            displayData(filteredEntries);
-        }
-
-        function displayData(filteredEntries = entries) {
+        function displayData() {
             const historyList = document.getElementById('historyList');
             let historyHTML = '';
             
             let totalHours = 0;
             let totalSatisfaction = 0;
             
-            if (filteredEntries.length === 0) {
-                historyHTML = '<p class="text-center text-muted">No entries found for this filter. Start your journey today! 🚀</p>';
+            if (entries.length === 0) {
+                historyHTML = '<p class="text-center text-muted">No entries yet. Start your journey today! 🚀</p>';
             }
             
-            filteredEntries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((entry) => {
+            entries.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((entry) => {
                 totalHours += entry.hours;
                 totalSatisfaction += entry.satisfaction;
                 
-                const isMyEntry = entry.userId === currentUser.uid;
-                
                 historyHTML += `
-                    <div class="entry-item" style="border-left-color: ${isMyEntry ? '#667eea' : '#48bb78'}">
+                    <div class="entry-item">
                         <div class="entry-header">
-                            <div>
-                                <span class="entry-date">${entry.date}</span>
-                                <br>
-                                <small style="color: #667eea; font-weight: 600;">
-                                    👤 ${entry.userName || entry.userEmail || 'Anonymous'}
-                                </small>
-                            </div>
-                            ${isMyEntry ? `<button class="btn-delete" onclick="deleteEntry('${entry.id}')">🗑️ Delete</button>` : ''}
+                            <span class="entry-date">${entry.date}</span>
+                            <button class="btn-delete" onclick="deleteEntry('${entry.id}')">🗑️ Delete</button>
                         </div>
                         <div class="entry-subject">${entry.subject}</div>
                         <div class="entry-meta">
@@ -807,22 +580,14 @@ const firebaseConfig = {<br>
 
             historyList.innerHTML = historyHTML;
 
-            // Calculate stats from ALL entries, not filtered
-            let allTotalHours = 0;
-            let allTotalSatisfaction = 0;
-            entries.forEach(e => {
-                allTotalHours += e.hours;
-                allTotalSatisfaction += e.satisfaction;
-            });
-
-            document.getElementById('totalHours').textContent = allTotalHours.toFixed(1);
+            document.getElementById('totalHours').textContent = totalHours.toFixed(1);
             document.getElementById('totalEntries').textContent = entries.length;
-            document.getElementById('avgRating').textContent = entries.length ? (allTotalSatisfaction / entries.length).toFixed(1) : '0';
+            document.getElementById('avgRating').textContent = entries.length ? (totalSatisfaction / entries.length).toFixed(1) : '0';
             document.getElementById('streakDays').textContent = entries.length;
         }
 
         function deleteEntry(id) {
-            if (confirm('❌ Delete this entry? This action cannot be undone.')) {
+            if (confirm('❌ Delete this entry? This will affect all users.')) {
                 database.ref('entries/' + id).remove()
                     .then(() => {
                         console.log('Entry deleted');
@@ -841,7 +606,6 @@ const firebaseConfig = {<br>
 
             const data = entries.map(e => ({
                 Date: e.date,
-                User: e.userName || e.userEmail || 'Anonymous',
                 Subject: e.subject,
                 'Hours Studied': e.hours,
                 'Topics Covered': e.topics,
