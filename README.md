@@ -1,2 +1,2 @@
 # tracker
-Tracks everything
+Tracks study sessions
